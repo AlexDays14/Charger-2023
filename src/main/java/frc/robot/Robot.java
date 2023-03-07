@@ -5,12 +5,10 @@
 package frc.robot;
 
 import edu.wpi.first.cameraserver.CameraServer;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.wpilibj.TimedRobot;
-import edu.wpi.first.wpilibj.Timer;
+/* import edu.wpi.first.wpilibj.Timer; */
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.drive.DifferentialDrive;
-import edu.wpi.first.wpilibj.motorcontrol.Spark;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import com.ctre.phoenix.motorcontrol.ControlMode;
@@ -41,6 +39,11 @@ public class Robot extends TimedRobot {
   XboxController _xboxOp = new XboxController(1);
 
   /* ---------- DIFFERENTIAL DRIVE ---------- */
+
+  double forward = 0;
+  double turn = 0;
+  Boolean up = false;
+  Boolean down = false;
 
   DifferentialDrive ADrive = new DifferentialDrive(_Drive_Left_Main, _Drive_Right_Main);
 
@@ -82,7 +85,19 @@ public class Robot extends TimedRobot {
    * SmartDashboard integrated updating.
    */
   @Override
-  public void robotPeriodic() {}
+  public void robotPeriodic() {
+    if(up){
+      _Arm.setNeutralMode(NeutralMode.Coast);
+      _Arm.set(ControlMode.PercentOutput, 0.5);
+    }else if(down){
+      _Arm.setNeutralMode(NeutralMode.Coast);
+      _Arm.set(ControlMode.PercentOutput, -0.5);
+    }else{
+      _Arm.setNeutralMode(NeutralMode.Brake);
+    }
+
+    ADrive.arcadeDrive(-forward, -turn);
+  }
 
   /**
    * This autonomous (along with the chooser code above) shows how to select between different
@@ -122,12 +137,10 @@ public class Robot extends TimedRobot {
   /** This function is called periodically during operator control. */
   @Override
   public void teleopPeriodic() {
-    double forward = -1 * _xboxDriver.getLeftY();
-    double turn = _xboxDriver.getRightX();
+    forward = -1 * _xboxDriver.getLeftY();
+    turn = _xboxDriver.getRightX();
     forward = Deadband(forward);
     turn = Deadband(turn);
-
-    ADrive.arcadeDrive(-forward, -turn);
 
     if(_xboxDriver.getLeftTriggerAxis() > 0.8){
       _Drive_Left_Main.setNeutralMode(NeutralMode.Brake);
@@ -142,13 +155,14 @@ public class Robot extends TimedRobot {
     }
 
     if(_xboxOp.getRightBumper()){
-      _Arm.setNeutralMode(NeutralMode.Coast);
-      _Arm.set(ControlMode.PercentOutput, 0.5);
+      up = true;
+      down = false;
     }else if(_xboxOp.getLeftBumper()){
-      _Arm.setNeutralMode(NeutralMode.Coast);
-      _Arm.set(ControlMode.PercentOutput, -0.5);
+      up = false;
+      down = true;
     }else{
-      _Arm.setNeutralMode(NeutralMode.Brake);
+      up = false;
+      down = false;
     }
   }
 
