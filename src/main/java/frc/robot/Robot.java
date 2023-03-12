@@ -5,6 +5,9 @@
 package frc.robot;
 
 import edu.wpi.first.cameraserver.CameraServer;
+import edu.wpi.first.wpilibj.Compressor;
+import edu.wpi.first.wpilibj.PneumaticsModuleType;
+import edu.wpi.first.wpilibj.Solenoid;
 import edu.wpi.first.wpilibj.TimedRobot;
 /* import edu.wpi.first.wpilibj.Timer; */
 import edu.wpi.first.wpilibj.XboxController;
@@ -15,7 +18,6 @@ import com.ctre.phoenix.motorcontrol.ControlMode;
 import com.ctre.phoenix.motorcontrol.NeutralMode;
 import com.ctre.phoenix.motorcontrol.can.TalonSRX;
 import com.ctre.phoenix.motorcontrol.can.WPI_VictorSPX;
-
 
 public class Robot extends TimedRobot {
   private static final String kDefaultAuto = "Default";
@@ -47,6 +49,11 @@ public class Robot extends TimedRobot {
 
   DifferentialDrive ADrive = new DifferentialDrive(_Drive_Left_Main, _Drive_Right_Main);
 
+  /* ---------- PNEUMATICS ---------- */
+
+  private final Compressor comp = new Compressor(PneumaticsModuleType.CTREPCM);
+  private final Solenoid solenoid = new Solenoid(PneumaticsModuleType.CTREPCM, 1);
+
   /**
    * This function is run when the robot is first started up and should be used for any
    * initialization code.
@@ -65,11 +72,11 @@ public class Robot extends TimedRobot {
     _Drive_Right_Follower.set(ControlMode.PercentOutput, 0);
     _Arm.set(ControlMode.PercentOutput, 0);
 
-    _Drive_Left_Main.setInverted(false);
-    _Drive_Left_Follower.setInverted(false);
+    _Drive_Left_Main.setInverted(true);
+    _Drive_Left_Follower.setInverted(true);
     _Drive_Right_Main.setInverted(false);
     _Drive_Right_Follower.setInverted(false);
-    _Arm.setInverted(false);
+    _Arm.setInverted(true);
 
     _Drive_Left_Follower.follow(_Drive_Left_Main);
     _Drive_Right_Follower.follow(_Drive_Right_Main);
@@ -88,15 +95,16 @@ public class Robot extends TimedRobot {
   public void robotPeriodic() {
     if(up){
       _Arm.setNeutralMode(NeutralMode.Coast);
-      _Arm.set(ControlMode.PercentOutput, 0.5);
+      _Arm.set(ControlMode.Position, 1);
     }else if(down){
       _Arm.setNeutralMode(NeutralMode.Coast);
       _Arm.set(ControlMode.PercentOutput, -0.5);
     }else{
+      _Arm.set(ControlMode.PercentOutput, 0);
       _Arm.setNeutralMode(NeutralMode.Brake);
     }
 
-    ADrive.arcadeDrive(-forward, -turn);
+    ADrive.arcadeDrive(forward, -turn);
   }
 
   /**
@@ -132,7 +140,9 @@ public class Robot extends TimedRobot {
 
   /** This function is called once when teleop is enabled. */
   @Override
-  public void teleopInit() {}
+  public void teleopInit() {
+    comp.close();
+  }
 
   /** This function is called periodically during operator control. */
   @Override
@@ -143,10 +153,16 @@ public class Robot extends TimedRobot {
     turn = Deadband(turn);
 
     if(_xboxDriver.getLeftTriggerAxis() > 0.8){
-      _Drive_Left_Main.setNeutralMode(NeutralMode.Brake);
+      /* _Drive_Left_Main.setNeutralMode(NeutralMode.Brake);
       _Drive_Left_Follower.setNeutralMode(NeutralMode.Brake);
       _Drive_Right_Main.setNeutralMode(NeutralMode.Brake);
       _Drive_Right_Follower.setNeutralMode(NeutralMode.Brake);
+
+      _Drive_Left_Main.set(ControlMode.PercentOutput, 0);
+      _Drive_Left_Follower.set(ControlMode.PercentOutput, 0);
+      _Drive_Right_Main.set(ControlMode.PercentOutput, 0);
+      _Drive_Right_Follower.set(ControlMode.PercentOutput, 0); */
+      ADrive.stopMotor();
     }else{
       _Drive_Left_Main.setNeutralMode(NeutralMode.Coast);
       _Drive_Left_Follower.setNeutralMode(NeutralMode.Coast);
@@ -154,15 +170,27 @@ public class Robot extends TimedRobot {
       _Drive_Right_Follower.setNeutralMode(NeutralMode.Coast);
     }
 
-    if(_xboxOp.getRightBumper()){
+    if(_xboxOp.getRightTriggerAxis() > 0.8){
       up = true;
       down = false;
-    }else if(_xboxOp.getLeftBumper()){
+    }else if(_xboxOp.getLeftTriggerAxis() > 0.8){
       up = false;
       down = true;
     }else{
       up = false;
       down = false;
+    }
+
+    if(_xboxOp.getAButton()){
+      solenoid.set(true);
+    }else if(_xboxOp.getBButton()){
+      solenoid.set(false);
+    }
+
+    if(_xboxOp.getXButtonPressed()){
+      comp.disable();
+    }else if(_xboxOp.getYButton()){
+      comp.enableDigital();
     }
   }
 

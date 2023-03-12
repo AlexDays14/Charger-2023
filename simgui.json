@@ -1,6 +1,11 @@
 {
   "HALProvider": {
     "Other Devices": {
+      "Compressor[0]": {
+        "header": {
+          "open": true
+        }
+      },
       "Victor SPX[3]": {
         "header": {
           "open": true
@@ -20,9 +25,19 @@
         "header": {
           "open": true
         }
+      },
+      "Victor SPX[7]": {
+        "header": {
+          "open": true
+        }
       }
     },
-    "RoboRIO": {
+    "Solenoids": {
+      "0": {
+        "header": {
+          "open": true
+        }
+      },
       "window": {
         "visible": true
       }
@@ -50,14 +65,13 @@
     "Persistent Values": {
       "open": false
     },
-    "Retained Values": {
-      "open": false
-    },
-    "Transitory Values": {
-      "open": false
-    },
     "retained": {
       "SmartDashboard": {
+        "open": true
+      }
+    },
+    "transitory": {
+      "LiveWindow": {
         "open": true
       }
     }
