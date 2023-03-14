@@ -46,6 +46,9 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
+      "/LiveWindow/Ungrouped/Victor SPX [5]": "Motor Controller",
+      "/LiveWindow/Ungrouped/Victor SPX [7]": "Motor Controller",
       "/SmartDashboard/Auto choices": "String Chooser"
     },
     "windows": {
